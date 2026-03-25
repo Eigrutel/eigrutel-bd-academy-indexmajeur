@@ -18,56 +18,48 @@ TOOLS = [
         "subtitle": "Détection de doublons",
         "folder": "applications",
         "exe": "EigrutelTwins.exe",
-        "kind": "orange",
+        "kind": "std",
     },
     {
         "title": "Photo",
         "subtitle": "Renommer photographies et images",
         "folder": "applications",
         "exe": "EigrutelPhotoRenamer.exe",
-        "kind": "orange",
+        "kind": "std",
     },
     {
         "title": "Documentation",
         "subtitle": "Organisation des références visuelles",
         "folder": "applications",
         "exe": "EigrutelDocumentationRenamer.exe",
-        "kind": "doc",
+        "kind": "std",
     },
     {
         "title": "Index Documentation",
         "subtitle": "aka LA MORGUE",
         "folder": "applications",
         "exe": "EigrutelIndexDocumentation.exe",
-        "kind": "doc",
+        "kind": "std",
     },
 ]
+# Palette plus vive, proche des autres programmes
 COLORS = {
-    "bg": "#F5F7F9",
-    "hero": "#FFFFFF",
-    "hero_border": "#D9E1E8",
-
-    "card_bg": "#FFFFFF",
-    "card_hover": "#FAFBFC",
-    "card_border": "#DCE3EA",
-
-    "text": "#243140",
-    "muted": "#667789",
-    "footer_text": "#708090",
-
-    "twins": "#C97A2B",
-    "photo": "#D79B2E",
-    "doc": "#4C9A8A",
-    "index": "#4A78B8",
-
-    "plus_bg": "#243140",
-    "plus_hover": "#18222D",
-    "plus_text": "#FFFFFF",
-
+    "bg": "#F5F7FA",
+    "card": "#2AA1AE",       # turquoise de la suite
+    "card_hover": "#238E99",
+    "doc": "#4B5B6B",        # couleur navigation / précédent-suivant
+    "doc_hover": "#40505F",
+    "orange": "#F4B183",
+    "orange_hover": "#E7A06A",
+    "footer_text": "#5C6C79",
+    "plus_bg": "#D9E1E8",
+    "plus_hover": "#C7D2DC",
+    "plus_text": "#2E3C49",
     "popup_bg": "#F6F8FA",
     "popup_text": "#2F3A44",
     "popup_muted": "#50606D",
 }
+
 
 def get_launcher_dir():
     if getattr(sys, "frozen", False):
@@ -125,26 +117,13 @@ def center_window(win, width, height, parent=None):
 def configure_extra_styles(root):
     style = ttk.Style(root)
 
-
     style.configure(
         "Plus.TButton",
-        background=COLORS["plus_bg"],
-        foreground=COLORS["plus_text"],
+        background="#2e3440",
+        foreground="#FFFFFF",
         font=("Segoe UI", 11, "bold"),
-        padding=6,
+        padding=4,
         borderwidth=0,
-    )
-
-    style.map(
-        "Plus.TButton",
-        background=[
-            ("active", COLORS["plus_hover"]),
-            ("pressed", COLORS["plus_hover"]),
-        ],
-        foreground=[
-            ("active", COLORS["plus_text"]),
-            ("pressed", COLORS["plus_text"]),
-        ],
     )
 
     style.map(
@@ -180,109 +159,62 @@ def set_card_hover(frame, title_lbl, sub_lbl, color, hover):
         w.bind("<Enter>", enter)
         w.bind("<Leave>", leave)
 
-def get_tool_accent(tool):
-    title = tool["title"]
-    if title == "Twins":
-        return COLORS["twins"]
-    if title == "Photo":
-        return COLORS["photo"]
-    if title == "Documentation":
-        return COLORS["doc"]
-    if title == "Index Documentation":
-        return COLORS["index"]
-    return COLORS["doc"]
 
-def build_card(parent, tool, index):
-    accent = get_tool_accent(tool)
-
+def build_card(parent, tool):
+    if tool["kind"] == "doc":
+        color = COLORS["doc"]
+        hover = COLORS["doc_hover"]
+        title_fg = "#FFFFFF"
+        sub_fg = "#EAF3F6"
+    elif tool["kind"] == "orange":
+        color = COLORS["orange"]
+        hover = "#FFAA3C"
+        title_fg = "#FFFFFF"
+        sub_fg = "#FFEBD6"
+    else:
+        color = COLORS["card"]
+        hover = COLORS["card_hover"]
+        title_fg = "#FFFFFF"
+        sub_fg = "#EAF3F6"
     card = tk.Frame(
         parent,
-        bg=COLORS["card_bg"],
+        bg=color,
         bd=0,
-        highlightthickness=1,
-        highlightbackground=COLORS["card_border"],
+        highlightthickness=2,
+        highlightbackground="#FFFFFF",
         cursor="hand2",
+        padx=16,
+        pady=12,
     )
-
-    top_line = tk.Frame(card, bg=accent, height=4)
-    top_line.pack(fill="x", side="top")
-
-    inner = tk.Frame(card, bg=COLORS["card_bg"], padx=18, pady=14)
-    inner.pack(fill="both", expand=True)
-
-    header = tk.Frame(inner, bg=COLORS["card_bg"])
-    header.pack(fill="x")
-
-    step = tk.Label(
-        header,
-        text=f"{index}.",
-        bg=COLORS["card_bg"],
-        fg=accent,
-        font=("Segoe UI", 11, "bold"),
-        anchor="w",
-    )
-    step.pack(side="left")
 
     title = tk.Label(
-        header,
+        card,
         text=tool["title"],
-        bg=COLORS["card_bg"],
-        fg=COLORS["text"],
+        bg=color,
+        fg=title_fg,
         font=("Segoe UI", 13, "bold"),
-        anchor="w",
+        anchor="center",
+        justify="center",
     )
-    title.pack(side="left", padx=(6, 0))
+    title.pack(anchor="center")
 
     subtitle = tk.Label(
-        inner,
+        card,
         text=tool["subtitle"],
-        bg=COLORS["card_bg"],
-        fg=COLORS["muted"],
-        font=("Segoe UI", 10),
-        anchor="w",
-        justify="left",
-        wraplength=290,
+        bg=color,
+        fg=sub_fg,
+        font=("Segoe UI", 9),
+        anchor="center",
+        justify="center",
+        wraplength=320,
     )
-    subtitle.pack(anchor="w", pady=(8, 0))
-
-    def enter(_event=None):
-        card.configure(bg=COLORS["card_hover"], highlightbackground=accent)
-        inner.configure(bg=COLORS["card_hover"])
-        header.configure(bg=COLORS["card_hover"])
-        step.configure(bg=COLORS["card_hover"])
-        title.configure(bg=COLORS["card_hover"])
-        subtitle.configure(bg=COLORS["card_hover"])
-
-    def leave(_event=None):
-        card.configure(bg=COLORS["card_bg"], highlightbackground=COLORS["card_border"])
-        inner.configure(bg=COLORS["card_bg"])
-        header.configure(bg=COLORS["card_bg"])
-        step.configure(bg=COLORS["card_bg"])
-        title.configure(bg=COLORS["card_bg"])
-        subtitle.configure(bg=COLORS["card_bg"])
+    subtitle.pack(anchor="center", pady=(4, 0))
 
     callback = lambda _e=None, f=tool["folder"], e=tool["exe"]: launch_tool(f, e)
     bind_click_recursive(card, callback)
-
-    for w in (card, top_line, inner, header, step, title, subtitle):
-        w.bind("<Enter>", enter)
-        w.bind("<Leave>", leave)
-
+    set_card_hover(card, title, subtitle, color, hover)
     return card
-    def leave(_event=None):
-        card.configure(bg=COLORS["card_bg"], highlightbackground=COLORS["card_border"])
-        top_row.configure(bg=COLORS["card_bg"])
-        title.configure(bg=COLORS["card_bg"])
-        subtitle.configure(bg=COLORS["card_bg"])
 
-    callback = lambda _e=None, f=tool["folder"], e=tool["exe"]: launch_tool(f, e)
-    bind_click_recursive(card, callback)
-
-    for w in (card, top_row, badge, title, subtitle, bottom_line):
-        w.bind("<Enter>", enter)
-        w.bind("<Leave>", leave)
-
-    return card
 
 def open_search_help(root):
     popup = tk.Toplevel(root)
@@ -290,8 +222,7 @@ def open_search_help(root):
     apply_app_icon(popup)
     popup.configure(bg=COLORS["popup_bg"])
     popup.transient(root)
-    popup.resizable(True, True)
-    popup.minsize(900, 600)
+    popup.resizable(False, False)
 
     # === zone scrollable ===
     outer = tk.Frame(popup, bg=COLORS["popup_bg"])
@@ -761,7 +692,7 @@ def open_search_help(root):
 
     popup.protocol("WM_DELETE_WINDOW", _on_close)
 
-    center_window(popup, 1000, 700, parent=root)
+    center_window(popup, 860, 560, parent=root)
     popup.grab_set()
     popup.focus_set()
 
@@ -769,75 +700,84 @@ def main():
     root = tk.Tk()
     root.title(APP_TITLE)
     apply_app_icon(root)
-    root.minsize(650, 450)
+    root.minsize(750, 480)
 
     apply_style(root)
     configure_extra_styles(root)
-    center_window(root, 650, 450)
+    center_window(root, 750, 480)
     root.configure(bg=COLORS["bg"])
 
-    top_wrap = tk.Frame(root, bg=COLORS["bg"], padx=20, pady=14)
-    top_wrap.pack(fill="x")
+    top = ttk.Frame(root, style="Topbar.TFrame")
+    top.pack(fill="x")
+    top.grid_columnconfigure(0, weight=1)
 
-    hero = tk.Frame(
-        top_wrap,
-        bg=COLORS["hero"],
-        highlightthickness=1,
-        highlightbackground=COLORS["hero_border"],
-        padx=18,
-        pady=14,
-    
-    )
-    hero.pack(fill="x")
-
-    tk.Label(
-        hero,
+    ttk.Label(
+        top,
         text="INDEX MAJEUR",
-        bg=COLORS["hero"],
-        fg=COLORS["text"],
-        font=("Segoe UI", 18, "bold"),
-        anchor="w",
-    ).pack(anchor="w")
+        style="TopbarTitle.TLabel",
+        anchor="center",
+    ).grid(row=0, column=0, sticky="ew", padx=16, pady=(14, 4))
 
     tk.Label(
-        hero,
-        text="Trier, nommer, structurer et exploiter une documentation visuelle.",
-        bg=COLORS["hero"],
-        fg=COLORS["muted"],
+        top,
+        text="Reprendre la main sur les noms de fichier.",
+        bg="#2E3440",
+        fg="#FFFFFF",
         font=("Segoe UI", 10),
-        anchor="w",
-        justify="left",
-    ).pack(anchor="w", pady=(6, 0))
+        anchor="center",
+        justify="center",
+    ).grid(row=1, column=0, sticky="ew", padx=16, pady=(0, 14))
 
-    body = tk.Frame(root, bg=COLORS["bg"], padx=20, pady=4)
-    body.pack(fill="both", expand=True) 
+    body = tk.Frame(root, bg=COLORS["bg"], padx=20, pady=18)
+    body.pack(fill="both", expand=True)
 
     grid = tk.Frame(body, bg=COLORS["bg"])
     grid.pack(anchor="center")
 
-    card_w = 300
+    card_w = 350
     for col in (0, 1):
         grid.grid_columnconfigure(col, minsize=card_w)
 
-    for i, tool in enumerate(TOOLS, start=1):
-        r = (i - 1) // 2
-        c = (i - 1) % 2
-        card = build_card(grid, tool, i)
-        card.grid(row=r, column=c, sticky="nsew", padx=10, pady=10)
+    for i, tool in enumerate(TOOLS):
+        r = i // 2
+        c = i % 2
+        card = build_card(grid, tool)
+        card.grid(row=r, column=c, sticky="nsew", padx=12, pady=12)
 
-   
-    footer = tk.Frame(root, bg=COLORS["bg"], padx=20, pady=10)
+    # --- WORKFLOW (entre les cartes et le footer) ---
+
+    workflow = tk.Frame(root, bg=COLORS["bg"])
+    workflow.pack(fill="x", padx=16, pady=(0, 0))
+
+    tk.Label(
+        workflow,
+        text="Trier → Nommer → Structurer → Exploiter",
+        bg=COLORS["bg"],
+        fg="#2E3440",
+        font=("Segoe UI", 10),
+        anchor="w",
+    ).pack(fill="x", padx=16, pady=(0, 0))
+
+    tk.Label(
+        workflow,
+        text="TWINS → PHOTO → DOCUMENTATION → INDEX DOCUMENTATION",
+        bg=COLORS["bg"],
+        fg=COLORS["footer_text"],
+        font=("Segoe UI", 9),
+        anchor="w",
+    ).pack(fill="x", padx=16, pady=(0, 0))
+
+    footer = tk.Frame(root, bg=COLORS["bg"], padx=16, pady=8)
     footer.pack(fill="x")
 
     ttk.Separator(footer).pack(fill="x", pady=(0, 8))
 
     foot_row = tk.Frame(footer, bg=COLORS["bg"])
     foot_row.pack(fill="x")
-    
-    
+
     tk.Label(
         foot_row,
-        text="Workflow : Twins → Photo → Documentation → Index Documentation \nSuite d’outils pour organiser la documentation visuelle — Eigrutel BD Academy 2026",
+        text="Suite d’outils pour organiser la documentation visuelle — Eigrutel BD Academy 2026",
         bg=COLORS["bg"],
         fg=COLORS["footer_text"],
         font=("Segoe UI", 9),
